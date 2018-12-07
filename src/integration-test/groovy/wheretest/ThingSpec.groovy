@@ -49,7 +49,7 @@ class ThingSpec extends Specification {
         Thing.withCriteria { eq "name", "thing 1" }.size() == 1
     }
 
-    void "test detachedCriteria"() {
+    void "test detachedCriteria -- fails, and the sql doesn't filter by name."() {
         given: "two things"
         setupData()
 
@@ -65,18 +65,21 @@ class ThingSpec extends Specification {
 
     }
 
-    void "test where"() {
+    void "test where -- fails, and the sql doesn't filter by name"() {
 
         given: "two things"
         setupData()
-        println "Running 'where'"
+        def queryClosure = { -> Thing.where { name == "thing 1" } }
 
         expect:
-        Thing.where { name == "thing 1" }.list().size() == 1
+        queryClosure.call().list().size() == 1  // works
+        Thing.where { name == "thing 1" }.list().size() == 1   // fails
     }
 
+    // these two tests just failed, but when wrapped in the
+    // spock 'where' block (or maybe because it is a closure)
     @Unroll
-    void "Test two bad ones #name"() {
+    void "Test two bad ones #name that failed above"() {
         given: "two things"
         setupData()
 
@@ -85,9 +88,9 @@ class ThingSpec extends Specification {
 
         // the previous two test failed... why do they work using this 'where/unroll' syntax?
         where:
-        name                        | expected | query
-        "Detached Criteria"         | 1        | {-> new DetachedCriteria(Thing).build { eq 'name', 'thing 1' }.list().size() }
-        "Using where"               | 1        | { -> Thing.where { name == "thing 1" }.list().size() }
+        name                | expected | query
+        "Detached Criteria" | 1        | { -> new DetachedCriteria(Thing).build { eq 'name', 'thing 1' }.list().size() }
+        "Where"             | 1        | { -> Thing.where { name == "thing 1" }.list().size() }
 
     }
 
@@ -114,9 +117,11 @@ class ThingSpec extends Specification {
         "Find all"                  | 1        | { -> Thing.findAllByName("thing 1").size() }
         "Find all again"            | 1        | { -> Thing.findAllByName("thing 2").size() }
         "Doesnt find using findall" | 0        | { -> Thing.findAllByName("unknown").size() }
-        "Using where"               | 1        | { -> Thing.where { name == "thing 1" }.list().size() }
-        "Using withCriteria"        | 1        | { -> Thing.withCriteria { eq "name", "thing 1" }.size() }
-        "Detached Criteria"         | 1        | {-> new DetachedCriteria(Thing).build { eq 'name', 'thing 1' }.list().size() }
+        "Using where -- works now?" | 1        | { -> Thing.where { name == "thing 1" }.list().size() }
+        "Using withCriteria "       | 1        | { -> Thing.withCriteria { eq "name", "thing 1" }.size() }
+        "Detached Criteria"         | 1        | { ->
+            new DetachedCriteria(Thing).build { eq 'name', 'thing 1' }.list().size()
+        }
 
     }
 }

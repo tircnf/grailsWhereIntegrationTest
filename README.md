@@ -1,2 +1,2 @@
-# grails where query not working in integraion test.
+# grails where query not working in integration test.
 
