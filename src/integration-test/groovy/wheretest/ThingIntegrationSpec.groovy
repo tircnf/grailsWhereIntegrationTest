@@ -9,19 +9,21 @@ import spock.lang.Unroll
 
 @Integration
 @Rollback
-class ThingSpec extends Specification {
+class ThingIntegrationSpec extends Specification {
 
     SessionFactory sessionFactory
 
     def logger
+    def oldValue
 
     def setup() {
         logger = sessionFactory.currentSession.jdbcCoordinator.statementPreparer.jdbcService.sqlStatementLogger
+        oldValue=logger.logToStdout
         logger.logToStdout = true
     }
 
     def cleanup() {
-        logger.logToStdout = false
+        logger.logToStdout = oldValue
     }
 
     def setupData() {
