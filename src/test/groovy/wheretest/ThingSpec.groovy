@@ -55,13 +55,22 @@ class ThingSpec extends Specification implements  DomainUnitTest<Thing> {
 
     void "test where -- fails, and the sql doesn't filter by name"() {
 
+
         given: "two things"
         setupData()
+
         def queryClosure = { -> Thing.where { name == "thing 1" }.list().size() }
+        def criteria = Thing.where {name == "thing 1"}
+
 
         expect:
         queryClosure() == 1  // works
-        Thing.where { name == "thing 1" }.list().size() == 1   // fails
+        criteria.list().size()==1
+        def result=Thing.where { name == "thing 1" }.list().size()
+        result==1
+        Thing.where { eq 'name', 'thing 1' }.list().size() == 1
+        Thing.where { name == "thing 1" }.list().size()==1    // fails.
+        // assert (Thing.where { name == "thing 1" }.list()).size() == 1 // also fails
     }
 
 

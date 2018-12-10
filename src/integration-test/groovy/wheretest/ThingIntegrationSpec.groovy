@@ -68,13 +68,20 @@ class ThingIntegrationSpec extends Specification {
 
     void "test where -- fails, and the sql doesn't filter by name"() {
 
-        given: "two things"
+
+        given: "two things and a detached criteria"
         setupData()
         def queryClosure = { -> Thing.where { name == "thing 1" }.list().size() }
+        def criteria = Thing.where {name == "thing 1"}
 
         expect:
-        queryClosure.call() == 1  // works
-        Thing.where { name == "thing 1" }.list().size() == 1   // fails
+        queryClosure() == 1  // works
+        criteria.list().size()==1
+        def result=Thing.where { name == "thing 1" }.list().size()
+        result==1
+        Thing.where { eq 'name', 'thing 1' }.list().size() == 1
+        Thing.where { name == "thing 1" }.list().size()==1  // the only one that fails
+        //assert Thing.where { name == "thing 1" }.list().size() == 1 // this also fails.
     }
 
 
